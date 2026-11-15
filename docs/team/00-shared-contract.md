@@ -34,20 +34,18 @@
 | **Sun 2–6 PM** | P3 records the demo video. P1 finalises the README. P2 makes screenshots. |
 | **Sun by 9 PM** | ✅ **Submitted** on spaceappschallenge.org (Universal Event, Terms + Original ticked). |
 
-## 4. Tech rules
+## 4. Tech rules (updated 15 Nov: HTML/CSS/JS + Python backend)
 
-- **Plain HTML + CSS + JavaScript ES modules.** No framework, no build step, no backend, no API keys.
-- One library only: **Chart.js 4.4.1** from cdnjs (`https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js`).
-- ES modules don't load from `file://`. Run a local server from the repo folder:
-  - `python -m http.server 8000` then open `http://localhost:8000`, **or**
-  - VS Code "Live Server" extension.
-- Hosted on **GitHub Pages** from the `main` branch (P3 switches it on).
-- Must work in Chrome and on a phone-width screen (375 px).
+- **Frontend: plain HTML + CSS + JavaScript ES modules** in `frontend/`. No framework, no build step. One library: **Chart.js 4.4.1** from cdnjs.
+- **Backend: Python (FastAPI)** in `backend/`. It fetches NASA data (Worldview/MODIS, NASA POWER, EONET), measures water, runs the **Mann-Kendall significance test and Sen's slope**, and serves `frontend/`.
+- Run: `cd backend && pip install -r requirements.txt && uvicorn main:app --port 8000`, then open `http://localhost:8000`. `?mock=1` runs the UI on mock data without NASA calls.
+- No API keys. Must work in Chrome and at phone width (375 px).
+- GitHub Pages can only host the frontend; the full app needs the backend running (locally or on a host such as Render).
 
 ## 5. Repo structure (who owns which file)
 
 ```
-earth-detective/
+earth-detective/            (15 Nov: frontend files now live in frontend/, Python API in backend/; js/app.js wires the UI to the API)
 ├── index.html              P3  app shell: header, 3 tabs (Scan · Time Machine · Feed), script tags
 ├── css/style.css           P3  design tokens + shared components (cards, buttons, chips)
 ├── css/scan.css            P2  chart + time machine styles

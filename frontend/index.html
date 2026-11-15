@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Earth Detective</title>
+  <meta name="description" content="Pick a place and a NASA variable, see how it changed since 2000, and test whether the change is statistically significant.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🕵️</text></svg>">
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+</head>
+<body>
+  <header class="top">
+    <div class="brand">🕵️ <b>Earth Detective</b><span class="sub">NASA Space Apps 2026 · Be An Earth System Trend Detective!</span></div>
+    <nav class="tabs" role="tablist">
+      <button class="tab active" data-tab="scan" role="tab">🔎 Scan</button>
+      <button class="tab" data-tab="time" role="tab">⏳ Time Machine</button>
+      <button class="tab" data-tab="feed" role="tab">📰 Feed</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ============ SCAN ============ -->
+    <section id="tab-scan" class="panel active">
+      <div class="card controls">
+        <div class="field">
+          <label>1 · Pick a place</label>
+          <div id="places" class="chips"></div>
+        </div>
+        <div class="field">
+          <label for="variable">2 · Pick a NASA variable</label>
+          <select id="variable"></select>
+          <p class="hint" id="var-hint"></p>
+        </div>
+        <div class="field actions">
+          <button id="run" class="btn">🕵️ Run Detective Scan</button>
+          <label class="check"><input type="checkbox" id="rescan"> fresh images (no cache)</label>
+        </div>
+      </div>
+
+      <div class="grid2">
+        <div class="card">
+          <h3>Case log</h3>
+          <div id="terminal" class="terminal"><span class="faint">Pick a place and a variable, then press Run Detective Scan.</span></div>
+        </div>
+        <div class="card verdict" id="verdict">
+          <h3>Is it really changing?</h3>
+          <p class="faint">The significance test appears here after a scan.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row-between">
+          <h3 id="chart-title">How it changed over time</h3>
+          <span class="source" id="chart-source"></span>
+        </div>
+        <div class="chart-wrap"><canvas id="chart"></canvas></div>
+        <p class="finding" id="finding"></p>
+      </div>
+
+      <div class="card" id="where-card">
+        <div class="row-between">
+          <h3>Where is it changing?</h3>
+          <button id="map-btn" class="btn-ghost" disabled>🗺️ Map the trend over this place</button>
+        </div>
+        <p class="hint">Splits the place into a 4 × 4 grid and runs the same significance test in every cell (NASA POWER, 2000–2025). Works for the climate variables.</p>
+        <div id="map" class="map"></div>
+        <div id="map-legend" class="hint"></div>
+      </div>
+    </section>
+
+    <!-- ============ TIME MACHINE ============ -->
+    <section id="tab-time" class="panel">
+      <div class="card">
+        <div class="row-between">
+          <h3 id="tm-title">Time Machine</h3>
+          <span class="source">NASA Worldview · MODIS Terra true colour</span>
+        </div>
+        <p class="hint" id="tm-hint">Run a scan first. Then drag the line to compare the first and latest measured year.</p>
+        <div class="swipe" id="swipe">
+          <img id="tm-after" alt="latest year">
+          <div class="swipe-before" id="tm-before-wrap"><img id="tm-before" alt="first year"></div>
+          <div class="swipe-handle" id="tm-handle"></div>
+          <span class="tag left" id="tm-left"></span><span class="tag right" id="tm-right"></span>
+        </div>
+        <input type="range" id="tm-swipe" min="0" max="100" value="50" aria-label="swipe">
+        <div class="row-between">
+          <label for="tm-year">Any year: <b id="tm-year-label">–</b></label>
+          <span id="tm-year-water" class="hint"></span>
+        </div>
+        <input type="range" id="tm-year" min="0" max="0" value="0" aria-label="year">
+        <img id="tm-single" class="single" alt="selected year">
+        <p class="note" id="tm-note"></p>
+      </div>
+    </section>
+
+    <!-- ============ FEED ============ -->
+    <section id="tab-feed" class="panel">
+      <div id="feed" class="feed"><p class="faint">Loading live NASA events…</p></div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    Data: NASA Worldview (MODIS Terra), NASA POWER (MERRA-2, CERES), NASA EONET. Every number is measured from NASA data; example content is labelled “example”.
+    <a href="https://worldview.earthdata.nasa.gov" target="_blank" rel="noopener">Worldview</a> ·
+    <a href="https://power.larc.nasa.gov" target="_blank" rel="noopener">POWER</a> ·
+    <a href="https://eonet.gsfc.nasa.gov" target="_blank" rel="noopener">EONET</a> ·
+    <a href="https://earthobservatory.nasa.gov" target="_blank" rel="noopener">Earth Observatory</a>
+  </footer>
+  <div id="toast" class="toast" role="status"></div>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
