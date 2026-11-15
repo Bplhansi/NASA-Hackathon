@@ -76,7 +76,9 @@
           <h3 id="tm-title">Time Machine</h3>
           <span class="source">NASA Worldview · MODIS Terra true colour</span>
         </div>
-        <p class="hint" id="tm-hint">Run a scan first. Then drag the line to compare the first and latest measured year.</p>
+        <p class="hint" id="tm-hint">Run a lake water scan first (Scan tab → pick a place → 💧 Lake water area → Run Detective Scan). Then drag the slider to compare the first and latest measured year.</p>
+        <button class="btn-ghost" id="tm-go">🔎 Go to Scan</button>
+        <div id="tm-body" hidden>
         <div class="swipe" id="swipe">
           <img id="tm-after" alt="latest year">
           <div class="swipe-before" id="tm-before-wrap"><img id="tm-before" alt="first year"></div>
@@ -91,6 +93,7 @@
         <input type="range" id="tm-year" min="0" max="0" value="0" aria-label="year">
         <img id="tm-single" class="single" alt="selected year">
         <p class="note" id="tm-note"></p>
+        </div>
       </div>
     </section>
 

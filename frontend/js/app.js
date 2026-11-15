@@ -258,6 +258,8 @@ function renderTimeMachine(r) {
   const ok = r.years.filter((y) => y.status === "ok");
   if (ok.length < 2) return;
   const a = ok[0], b = ok.at(-1);
+  $("tm-body").hidden = false;
+  $("tm-go").hidden = true;
   $("tm-title").textContent = `Time Machine · ${r.name}`;
   $("tm-hint").textContent = "Drag the slider to swipe between the first and latest measured year.";
   $("tm-before").src = a.imageUrl;
@@ -282,6 +284,7 @@ function setSwipe(v) {
   $("tm-before-wrap").style.clipPath = `inset(0 ${100 - v}% 0 0)`;
   $("tm-handle").style.left = `${v}%`;
 }
+$("tm-go").addEventListener("click", () => go("scan"));
 $("tm-swipe").addEventListener("input", (e) => setSwipe(+e.target.value));
 
 // ---------------------------------------------------------------- feed + solutions
