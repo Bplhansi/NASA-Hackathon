@@ -1,0 +1,192 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0a0f1e">
+  <meta name="description" content="Earth Detective explores changes in Earth's water systems using NASA satellite imagery and natural event data.">
+
+  <title>Earth Detective | Investigate Our Changing Planet</title>
+
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%8C%8D%3C/text%3E%3C/svg%3E">
+
+  <link rel="stylesheet" href="./css/style.css">
+  <link rel="stylesheet" href="./css/scan.css">
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" defer></script>
+  <script type="module" src="./js/main.js"></script>
+</head>
+
+<body>
+  <div class="app-shell">
+
+    <!-- HEADER -->
+    <header class="site-header">
+      <a href="#scan" class="brand" aria-label="Earth Detective home">
+        <span class="brand-icon">🌍</span>
+        <span class="brand-name">EARTH <strong>DETECTIVE</strong></span>
+      </a>
+
+      <div class="header-status">
+        <span class="status-dot"></span>
+        <span>POWERED BY NASA DATA</span>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-eyebrow">🛰️ EARTH SYSTEM INVESTIGATION PLATFORM</div>
+
+      <h1 id="hero-title">
+        Every change leaves <span class="accent">a trace.</span>
+      </h1>
+
+      <p class="hero-description">
+        Investigate our changing planet using NASA satellite imagery.
+        Discover trends, travel through time, and explore real Earth events.
+      </p>
+
+      <div class="hero-pills">
+        <span class="chip">🛰️ NASA Earth Observation</span>
+        <span class="chip">📈 Historical Trends</span>
+        <span class="chip">🌎 Natural Events</span>
+      </div>
+    </section>
+
+    <!-- NAVIGATION -->
+    <nav class="tab-bar" aria-label="Main navigation">
+      <button class="tab active" data-tab="scan" type="button" aria-current="page">
+        🕵️ Detective Scan
+      </button>
+      <button class="tab" data-tab="time" type="button">
+        🕰️ Time Machine
+      </button>
+      <button class="tab" data-tab="feed" type="button">
+        🌍 Earth Feed
+      </button>
+    </nav>
+
+    <main id="main-content">
+
+      <!-- TAB 1: DETECTIVE SCAN -->
+      <section id="tab-scan" class="tab-panel active" aria-label="Detective Scan">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">01 / INVESTIGATE</p>
+            <h2>Detective Scan</h2>
+            <p>Select a location to investigate changes over time.</p>
+          </div>
+          <span class="section-icon">🔎</span>
+        </div>
+
+        <div class="card scan-controls">
+          <label for="case-picker" class="field-label">
+            SELECT INVESTIGATION SITE
+          </label>
+
+          <select id="case-picker" class="case-select">
+            <option value="">Loading locations...</option>
+          </select>
+
+          <button id="run-scan" class="btn" type="button">
+            🛰️ Run Detective Scan
+          </button>
+
+          <p class="helper-text">
+            Uses NASA satellite imagery to estimate water-coloured
+            pixel coverage. Results are exploratory, not validated
+            measurements of lake area.
+          </p>
+        </div>
+
+        <div class="card terminal-card">
+          <div class="card-heading">
+            <h3>Investigation Log</h3>
+            <span class="chip">SCAN ENGINE</span>
+          </div>
+          <div id="terminal" aria-live="polite"></div>
+        </div>
+
+        <div id="scan-results" class="scan-results">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">02 / DISCOVER</p>
+              <h2>Evidence & Findings</h2>
+            </div>
+          </div>
+
+          <!-- P2's chart.js renders here -->
+          <div id="chart"></div>
+
+          <!-- Reserved for additional findings -->
+          <div id="finding"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: TIME MACHINE -->
+      <section id="tab-time" class="tab-panel" aria-label="Time Machine" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">03 / COMPARE</p>
+            <h2>Time Machine</h2>
+            <p>Compare satellite views across different years.</p>
+          </div>
+          <span class="section-icon">🕰️</span>
+        </div>
+
+        <div class="card time-card">
+          <!-- P2's timemachine.js renders here -->
+          <div id="timemachine">
+            <p class="empty-state">
+              Run a Detective Scan to unlock the Time Machine.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: EARTH FEED -->
+      <section id="tab-feed" class="tab-panel" aria-label="Earth Feed" hidden>
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">04 / EXPLORE</p>
+            <h2>Earth Feed</h2>
+            <p>Explore NASA natural-event reports and share possible solutions.</p>
+          </div>
+          <span class="section-icon">🌍</span>
+        </div>
+
+        <!-- P3's feed.js renders here -->
+        <div id="feed">
+          <div class="card">
+            <p class="empty-state">Loading NASA Earth events...</p>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- GLOBAL MODAL / BOTTOM SHEET -->
+    <div id="modal-root"></div>
+
+    <!-- NOTIFICATIONS -->
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+      <div class="footer-brand">🌍 EARTH DETECTIVE</div>
+      <p>
+        Built for NASA Space Apps Challenge 2026.
+        Independent student project; not an official NASA application.
+      </p>
+      <p>
+        Data sources:
+        <a href="https://worldview.earthdata.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA Worldview</a>
+        ·
+        <a href="https://eonet.gsfc.nasa.gov/" target="_blank" rel="noopener noreferrer">NASA EONET</a>
+      </p>
+    </footer>
+
+  </div>
+</body>
+</html>
