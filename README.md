@@ -2,19 +2,49 @@
 
 NASA Space Apps 2026 · challenge **"Be An Earth System Trend Detective!"**
 
-Pick a place (Aral Sea, Lake Urmia or Lake Mead), press **Run Detective Scan**, and the app downloads a real NASA satellite image for every year since 2000, measures the water in each one, charts the trend and writes a plain-English finding.
+Pick a place (Aral Sea, Lake Urmia or Lake Mead) and a NASA variable, press **Run Detective Scan**, and the app shows **what** is changing, **where**, **by how much** and **whether the change is statistically significant**.
+
+- **Water area**, measured by us from a real NASA MODIS Terra image for every year since 2000.
+- **12 climate variables** from NASA POWER (MERRA-2 reanalysis and CERES/GEWEX satellite data): temperature, rainfall, soil wetness, humidity, snow depth, cloud, radiation and more.
+- Every trend gets a **Mann-Kendall test** (p-value: is it real or random?) and a **Sen's slope** (how much per decade). Monthly climate data uses the seasonal Mann-Kendall test, so the yearly cycle doesn't fake a trend.
+- **Where:** a 4 × 4 trend map over the place, with significant cells outlined.
+- **Time Machine** swipe (2000 vs today), a year slider, and a feed with **live NASA EONET** natural events and a Solutions box.
 
 > Team docs: [`docs/team/00-shared-contract.md`](docs/team/00-shared-contract.md) (read first) and the per-role task files.
 
-## Run it locally
+## Run it locally (one command)
 
-ES modules don't load from `file://`, so start a local server in the repo folder:
+Plain HTML/CSS/JavaScript frontend + Python (FastAPI) backend. Needs Python 3.10+ and internet (NASA APIs, no keys).
 
 ```bash
-python -m http.server 8000
+cd backend
+pip install -r requirements.txt
+uvicorn main:app --port 8000
 ```
 
-Then open `http://localhost:8000`. The P1 scan test bench is at `http://localhost:8000/dev/p1-test.html`.
+Open **http://localhost:8000**. API docs are at http://localhost:8000/docs. Offline tests: `python test_backend.py`.
+
+UI-only demo without the backend: open `http://localhost:8000/?mock=1` (uses `frontend/mock/scan-aral.json`, made-up numbers, clearly labelled MOCK). The original in-browser P1 scan test bench is at `/dev/p1-test.html`.
+
+### Layout
+
+| Path | What it does |
+|---|---|
+| `backend/main.py` | FastAPI app: `/api/scan/{case}` (water scan), `/api/trend`, `/api/trend/grid`, `/api/compare`, `/api/timeseries` (NASA POWER), `/api/events` (EONET), `/api/cases`, `/api/variables`. Serves `frontend/`. Caches NASA responses in `backend/cache/`. |
+| `backend/trends.py` | Mann-Kendall (plain and seasonal) and Sen's slope, no heavy dependencies |
+| `backend/test_backend.py` | Offline tests with synthetic data |
+| `frontend/index.html`, `css/style.css`, `js/app.js` | The app: place + variable picker, case log, significance card, Chart.js trend chart, trend map, Time Machine, feed, Solutions |
+| `frontend/js/{cases,nasa,measure,scan}.js` | P1's original in-browser scan engine (same rules as the Python scan) |
+
+### Results from a live run (15 Nov 2026)
+
+| Place | Water, first → latest | Change | Mann-Kendall p | Sen's slope |
+|---|---|---|---|---|
+| Aral Sea | 13.5% (2000) → 2.4% (2026) | −82% | < 0.001 ✅ | −3.7 pts/decade |
+| Lake Urmia | 24% (2000) → 8.6% (2026) | −64% | < 0.001 ✅ | −9.0 pts/decade |
+| Lake Mead | 3.5% (2000) → 2.7% (2026) | −23% | 0.001 ✅ | −0.6 pts/decade |
+
+Climate examples (NASA POWER, 2000–2025, seasonal Mann-Kendall): air temperature at Lake Mead is rising about **+0.42 °C per decade** (p = 0.001, all 16 map cells significant) and at Lake Urmia about **+0.40 °C per decade** (p < 0.001). At the Aral Sea centre, temperature shows **no significant trend** (p = 0.94). We show that too.
 
 <!-- P3: app overview, demo link, screenshots, team, "Use of AI" statement go here. -->
 
@@ -24,7 +54,9 @@ Then open `http://localhost:8000`. The P1 scan test bench is at `http://localhos
 
 ### Data
 
-- **NASA Worldview Snapshot API** (`wvs.earthdata.nasa.gov`). No key needed, and it sends CORS headers so the browser can read pixels.
+The Python backend (`backend/main.py`, `measure_water`) runs the scan. It uses the same rules as P1's `frontend/js/measure.js`.
+
+- **NASA Worldview Snapshot API** (`wvs.earthdata.nasa.gov`). No key needed.
 - **MODIS Terra Corrected Reflectance**, 250 m pixels, two layers per date, same box and size so they line up pixel for pixel:
   - **True colour.** This is what people see in the app (Time Machine, feed).
   - **Bands 7-2-1** (shortwave infrared, near infrared, red). This is what we measure.
@@ -38,11 +70,11 @@ Then open `http://localhost:8000`. The P1 scan test bench is at `http://localhos
    - **Cloud.** Bright in all three 7-2-1 bands. Wet salt flats are cyan in 7-2-1 (low SWIR), so they are *not* mistaken for cloud.
    - **No data.** Pure black in true colour (MODIS swath gaps).
 3. **Water %** = water pixels ÷ pixels with data × 100. It is a share of the image box, not km².
-4. The trend is the year-by-year water %. We report the change from the first to the latest measured year, and the **biggest single drop** between two neighbouring measured years.
+4. The trend is the year-by-year water %. We report the change from the first to the latest measured year, the **biggest single drop** between two neighbouring measured years, and a **Mann-Kendall test** (p < 0.05 = significant) with **Sen's slope** in percentage points of the image per decade. Gap years are left out of the test, never filled.
 
-The thresholds were tuned by eye on real images. `assets/debug-mask.png` shows the true-colour image next to the measured water (cyan) and cloud (magenta) for Aral Sea 2000/2025 and Lake Urmia 2012/2025.
+The thresholds were tuned by eye on real images. `frontend/assets/debug-mask.png` shows the true-colour image next to the measured water (cyan) and cloud (magenta) for Aral Sea 2000/2025 and Lake Urmia 2012/2025.
 
-![Debug mask](assets/debug-mask.png)
+![Debug mask](frontend/assets/debug-mask.png)
 
 ### Quality checks
 
