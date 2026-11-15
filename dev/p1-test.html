@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>P1 Scan Test Bench</title>
+<!-- P1 developer test page. Not part of the app (index.html is P3's). Open via a local server:
+     python -m http.server 8000  →  http://localhost:8000/dev/p1-test.html -->
+<style>
+  :root {
+    --bg: #0a0f1e; --card: #121a30; --card-2: #161f38; --line: #25304f;
+    --text: #e6eaf6; --muted: #9aa5c4; --faint: #5f6a8a;
+    --yellow: #ffcc33; --green: #4fe0a0; --cyan: #3ee0ff; --purple: #b58cff; --red: #ff6b81; --blue: #4fb3ff;
+    --radius: 18px; --font: "Segoe UI", system-ui, sans-serif; --mono: Consolas, Menlo, monospace;
+  }
+  body { margin: 0; padding: 16px; background: var(--bg); color: var(--text); font-family: var(--font); }
+  main { max-width: 900px; margin: 0 auto; display: grid; gap: 16px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  select, button { font: inherit; padding: 8px 14px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--card-2); color: var(--text); }
+  button.primary { background: var(--yellow); color: var(--bg); border-color: var(--yellow); font-weight: 600; }
+  table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13px; }
+  td, th { padding: 4px 6px; border-bottom: 1px solid var(--line); text-align: left; }
+  .gap { color: var(--faint); }
+  .drop { color: var(--red); }
+  #finding { font-size: 18px; color: var(--green); }
+  #masks { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 8px; }
+  #masks canvas, #masks img { width: 100%; border-radius: 10px; }
+  .muted { color: var(--muted); font-size: 13px; }
+  #events li { margin-bottom: 6px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>🕵️ P1 Scan Test Bench</h1>
+  <div class="card row">
+    <select id="case"></select>
+    <button class="primary" id="run">🕵️ Run Detective Scan</button>
+    <button id="rescan">Rescan (ignore cache)</button>
+    <button id="mock">Load mock</button>
+    <button id="mask">Debug mask (first + latest)</button>
+    <button id="eonet">Fetch EONET</button>
+  </div>
+  <div id="terminal"></div>
+  <div class="card"><div id="finding" class="muted">No result yet.</div></div>
+  <div class="card" id="masks"></div>
+  <div class="card"><table id="table"></table></div>
+  <div class="card"><ul id="events" class="muted"></ul></div>
+</main>
+<script type="module">
+  import { CASES } from "../js/cases.js";
+  import { runScan } from "../js/scan.js";
+  import { loadImage, fetchEvents } from "../js/nasa.js";
+  import { debugMask } from "../js/measure.js";
+
+  const $ = (id) => document.getElementById(id);
+  let last = null;
+  $("case").innerHTML = CASES.map((c) => `<option value="${c.id}">${c.name} · ${c.country}</option>`).join("");
+
+  $("run").onclick = () => runScan($("case").value);
+  $("rescan").onclick = () => runScan($("case").value, { rescan: true });
+  $("mock").onclick = async () => {
+    const r = await (await fetch("../mock/scan-aral.json")).json();
+    document.dispatchEvent(new CustomEvent("scan:done", { detail: r }));
+  };
+
+  document.addEventListener("scan:error", (e) => { $("finding").textContent = "Error: " + e.detail.message; });
+  document.addEventListener("scan:done", (e) => {
+    const r = (last = e.detail);
+    window.lastScan = r;
+    $("finding").textContent = r.finding;
+    const drop = r.biggestDrop;
+    $("table").innerHTML = "<tr><th>Year</th><th>Date</th><th>Status</th><th>Water %</th><th>Est.</th><th>Image</th></tr>" +
+      r.years.map((y) => {
+        const cls = y.status !== "ok" ? "gap" : drop && y.year === drop.to ? "drop" : "";
+        return `<tr class="${cls}"><td>${y.year}</td><td>${y.date}</td><td>${y.status}</td>` +
+          `<td>${y.waterPct ?? "—"}</td><td>${y.estimated ? "estimate" : ""}</td>` +
+          `<td><a href="${y.imageUrl}" target="_blank" rel="noopener">open</a></td></tr>`;
+      }).join("");
+  });
+
+  $("mask").onclick = async () => {
+    if (!last) return alert("Run a scan first");
+    const ok = last.years.filter((y) => y.status === "ok");
+    $("masks").innerHTML = "";
+    for (const y of [ok[0], ok.at(-1)]) {
+      const img = await loadImage(y.imageUrl);
+      const ir = y.analysisUrl ? await loadImage(y.analysisUrl) : null;
+      const fig = document.createElement("figure");
+      fig.style.margin = 0;
+      fig.append(img, debugMask(img, ir));
+      const cap = document.createElement("figcaption");
+      cap.className = "muted";
+      cap.textContent = `${y.year} · water ${y.waterPct}% (cyan = water, magenta = cloud)`;
+      fig.append(cap);
+      $("masks").append(fig);
+    }
+  };
+
+  $("eonet").onclick = async () => {
+    $("events").innerHTML = "<li>Loading…</li>";
+    try {
+      const evs = await fetchEvents();
+      window.lastEvents = evs;
+      $("events").innerHTML = evs.map((e) =>
+        `<li><b>${e.title}</b> · ${e.category} · ${e.date} · ${e.lat.toFixed(2)}, ${e.lon.toFixed(2)}` +
+        `${e.magnitude ? " · " + e.magnitude : ""} · <a href="${e.thumbUrl}" target="_blank" rel="noopener">thumb</a></li>`).join("");
+    } catch (err) {
+      $("events").innerHTML = `<li>Error: ${err.message}</li>`;
+    }
+  };
+</script>
+</body>
+</html>
