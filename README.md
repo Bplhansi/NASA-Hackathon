@@ -4,6 +4,14 @@ NASA Space Apps 2026 · challenge **"Be An Earth System Trend Detective!"**
 
 Pick a place (Aral Sea, Lake Urmia or Lake Mead), press **Run Detective Scan**, and the app downloads a real NASA satellite image for every year since 2000, measures the water in each one, charts the trend and writes a plain-English finding.
 
+
+## 🎬 Watch Our Demo
+
+[▶️ Watch Earth Detective — 30-Second Demo](https://bplhansi.github.io/NASA-Hackathon/demo/)
+
+🌍 [Try Earth Detective Live](https://bplhansi.github.io/NASA-Hackathon/)
+
+
 > Team docs: [`docs/team/00-shared-contract.md`](docs/team/00-shared-contract.md) (read first) and the per-role task files.
 
 ## Run it locally
